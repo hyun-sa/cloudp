@@ -7,7 +7,7 @@ def clear_screen():
 
 
 def list_instances(ec2):
-    return None
+    return [(instance.id, instance.instance_type, instance.state['Name']) for instance in ec2.instances.all()]
 
 
 def available_zones(ec2):
@@ -43,7 +43,7 @@ def do_some_job():
 
 
 def main():
-    ec2 = None
+    ec2 = boto3.resource('ec2')
     while True:
         clear_screen()
         print("\nAmazon AWS Control Panel Using SDK")
@@ -61,7 +61,8 @@ def main():
         input_str = input("Enter an integer: ")
 
         if input_str == '1':
-            pass
+            for instance in list_instances(ec2):
+                print(f"Instance ID : {instance[0]}, Instance Type : {instance[1]}, Instance State : {instance[2]}")
         elif input_str == '2':
             pass
         elif input_str == '3':
