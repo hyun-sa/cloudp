@@ -10,9 +10,9 @@ def list_instances(ec2):
     return [(instance.id, instance.instance_type, instance.state['Name']) for instance in ec2.instances.all()]
 
 
-def available_zones(ec2):
-    return None
-
+def available_zones():
+    ec2 = boto3.client('ec2')
+    return [zone['ZoneName'] for zone in ec2.describe_availability_zones()['AvailabilityZones']]
 
 def start_instance(ec2, instance_id):
     return None
@@ -64,7 +64,9 @@ def main():
             for instance in list_instances(ec2):
                 print(f"Instance ID : {instance[0]}, Instance Type : {instance[1]}, Instance State : {instance[2]}")
         elif input_str == '2':
-            pass
+            print(f"Available Zones")
+            for zone in available_zones():
+                print(zone)
         elif input_str == '3':
             pass
         elif input_str == '5':
