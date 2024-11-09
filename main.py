@@ -43,12 +43,28 @@ def stop_instance(ec2, instance_id):
         print("Error : No valid instance ID")
 
 
-def create_instance(ec2, image_id, instance_type):
-    return None
+def create_instance(ec2, image_id):
+    chk = False
+    for image in list_images()['Images']:
+        if image['ImageId'] == image_id:
+            chk = True
+    if chk:
+        Instance = ec2.create_instances(ImageId=image_id, InstanceType='t2.micro', MinCount=1, MaxCount=1)
+        print(f"Instance {Instance[0].id} created")
+    else:
+        print("Error : No valid image ID")
 
 
 def reboot_instance(ec2, instance_id):
-    return None
+    chk = False
+    for instance in list_instances(ec2):
+        if instance[0] == instance_id:
+            chk = True
+    if chk:
+        ec2.Instance(instance_id).reboot()
+        print(f"Instance {instance_id} rebooted")
+    else:
+        print("Error : No valid instance ID")
 
 
 def list_images():
@@ -110,12 +126,13 @@ def main():
             print(f"List All Available Images")
             for image in list_images()['Images']:
                 print(f"AMI ID : {image['ImageId']}, Name : {image['Name']}")
+            create_instance(ec2, str(input("Input Image ID : ")))       
         elif input_str == '7':
             print(f"Reboot Instance \n ============")
             print(f"List All Instances")
             for instance in list_instances(ec2):
                 print(f"Instance ID : {instance[0]}, Instance Type : {instance[1]}, Instance State : {instance[2]}")
-            pass
+            reboot_instance(ec2, str(input("Input Image ID : ")))       
         elif input_str == '8':
             print(f"List All Available Images")
             for image in list_images()['Images']:
