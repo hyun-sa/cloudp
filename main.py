@@ -14,6 +14,11 @@ def available_zones():
     ec2 = boto3.client('ec2')
     return [zone['ZoneName'] for zone in ec2.describe_availability_zones()['AvailabilityZones']]
 
+
+def available_regions():
+    return boto3.Session().get_available_regions('ec2')
+
+
 def start_instance(ec2, instance_id):
     return None
 
@@ -30,8 +35,8 @@ def reboot_instance(ec2, instance_id):
     return None
 
 
-def list_images(ec2):
-    return None
+def list_images():
+    return boto3.client('ec2').describe_images(Owners=['self'])
 
 
 def condor_status_check():
@@ -49,8 +54,8 @@ def main():
         print("\nAmazon AWS Control Panel Using SDK")
         print("1. List Instances")
         print("2. Available Zones")
-        print("3. Start Instance")
-        print("4. Available Regions")
+        print("3. Available Regions")
+        print("4. Start Instance")
         print("5. Stop Instance")
         print("6. Create Instance")
         print("7. Reboot Instance")
@@ -66,8 +71,12 @@ def main():
         elif input_str == '2':
             print(f"Available Zones")
             for zone in available_zones():
-                print(zone)
+                print(f"{zone}")
         elif input_str == '3':
+            print(f"Available Regions")
+            for region in available_regions():
+                print(f"{region}")
+        elif input_str == '4':
             pass
         elif input_str == '5':
             pass
@@ -76,7 +85,9 @@ def main():
         elif input_str == '7':
             pass
         elif input_str == '8':
-            pass
+            print(f"List All Available Images")
+            for image in list_images()['Images']:
+                print(f"AMI ID : {image['ImageId']}, Name : {image['Name']}")
         elif input_str == '9':
             pass
         elif input_str == '10':
