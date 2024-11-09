@@ -20,11 +20,27 @@ def available_regions():
 
 
 def start_instance(ec2, instance_id):
-    return None
+    chk = False
+    for instance in list_instances(ec2):
+        if instance[0] == instance_id:
+            chk = True
+    if chk:
+        ec2.Instance(instance_id).start()
+        print(f"Instance {instance_id} started")
+    else:
+        print(f"Error : No valid instance ID")
 
 
 def stop_instance(ec2, instance_id):
-    return None
+    chk = False
+    for instance in list_instances(ec2):
+        if instance[0] == instance_id:
+            chk = True
+    if chk:
+        ec2.Instance(instance_id).stop()
+        print(f"Instance {instance_id} stopped")
+    else:
+        print("Error : No valid instance ID")
 
 
 def create_instance(ec2, image_id, instance_type):
@@ -82,13 +98,13 @@ def main():
             print(f"List All Instances")
             for instance in list_instances(ec2):
                 print(f"Instance ID : {instance[0]}, Instance Type : {instance[1]}, Instance State : {instance[2]}")
-            pass
+            start_instance(ec2, str(input("Input Instance ID : ")))       
         elif input_str == '5':
             print(f"Stop Instance \n ============")
             print(f"List All Instances")
             for instance in list_instances(ec2):
                 print(f"Instance ID : {instance[0]}, Instance Type : {instance[1]}, Instance State : {instance[2]}")
-            pass
+            stop_instance(ec2, str(input("Input Instance ID : ")))       
         elif input_str == '6':
             print(f"Create Instance \n ============")
             print(f"List All Available Images")
