@@ -66,6 +66,7 @@ def main():
         input_str = input("Enter an integer: ")
 
         if input_str == '1':
+            print(f"List All Instances")
             for instance in list_instances(ec2):
                 print(f"Instance ID : {instance[0]}, Instance Type : {instance[1]}, Instance State : {instance[2]}")
         elif input_str == '2':
@@ -77,12 +78,27 @@ def main():
             for region in available_regions():
                 print(f"{region}")
         elif input_str == '4':
+            print(f"Start Instance \n ============")
+            print(f"List All Instances")
+            for instance in list_instances(ec2):
+                print(f"Instance ID : {instance[0]}, Instance Type : {instance[1]}, Instance State : {instance[2]}")
             pass
         elif input_str == '5':
+            print(f"Stop Instance \n ============")
+            print(f"List All Instances")
+            for instance in list_instances(ec2):
+                print(f"Instance ID : {instance[0]}, Instance Type : {instance[1]}, Instance State : {instance[2]}")
             pass
         elif input_str == '6':
-            pass
+            print(f"Create Instance \n ============")
+            print(f"List All Available Images")
+            for image in list_images()['Images']:
+                print(f"AMI ID : {image['ImageId']}, Name : {image['Name']}")
         elif input_str == '7':
+            print(f"Reboot Instance \n ============")
+            print(f"List All Instances")
+            for instance in list_instances(ec2):
+                print(f"Instance ID : {instance[0]}, Instance Type : {instance[1]}, Instance State : {instance[2]}")
             pass
         elif input_str == '8':
             print(f"List All Available Images")
@@ -93,6 +109,7 @@ def main():
         elif input_str == '10':
             pass
         elif input_str == '99':
+            print(f"@program shutdown@ - Hyunsa")
             break
         else:
             print("Invalid option. Please try again.")
