@@ -1,5 +1,6 @@
 import boto3
 import os
+import paramiko
 
 
 def clear_screen():
@@ -71,8 +72,27 @@ def list_images():
     return boto3.client('ec2').describe_images(Owners=['self'])
 
 
-def condor_status_check():
-    return None
+def condor_status_check(ec2, instance_id):
+    chk = False
+    for instance in list_instances(ec2):
+        if instance[0] == instance_id:
+            chk = True
+    if not chk:
+        print(f"Instance {instance_id} is not exist")
+        return None
+    ec2c = boto3.client('ec2')
+    instance = ec2c.describe_instances(InstanceIds=[instance_id])['Reservations'][0]['Instances'][0]
+    key = paramiko.RSAKey.from_private_key_file("**mask for upload github**")
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        ssh.connect(hostname=instance["PublicIpAddress"], username='ec2-user', pkey=key)
+        stdin, stdout, sterr = ssh.exec_command('condor_status')
+        print(stdout.read().decode())
+    except Exception as e:
+        print(f"{e}")
+    finally:
+        ssh.close
 
 
 def do_some_job():
@@ -132,13 +152,17 @@ def main():
             print(f"List All Instances")
             for instance in list_instances(ec2):
                 print(f"Instance ID : {instance[0]}, Instance Type : {instance[1]}, Instance State : {instance[2]}")
-            reboot_instance(ec2, str(input("Input Image ID : ")))       
+            reboot_instance(ec2, str(input("Input Instance ID : ")))       
         elif input_str == '8':
             print(f"List All Available Images")
             for image in list_images()['Images']:
                 print(f"AMI ID : {image['ImageId']}, Name : {image['Name']}")
         elif input_str == '9':
-            pass
+            print(f"Condor Status Check \n ============")
+            print(f"List All Instances")
+            for instance in list_instances(ec2):
+                print(f"Instance ID : {instance[0]}, Instance Type : {instance[1]}, Instance State : {instance[2]}")
+            condor_status_check(ec2, str(input("Input Instance ID : ")))       
         elif input_str == '10':
             pass
         elif input_str == '99':
