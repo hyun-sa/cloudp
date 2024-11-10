@@ -1,6 +1,8 @@
 import boto3
 import os
 import paramiko
+import time
+import scp
 
 
 def clear_screen():
@@ -82,12 +84,12 @@ def condor_status_check(ec2, instance_id):
         return None
     ec2c = boto3.client('ec2')
     instance = ec2c.describe_instances(InstanceIds=[instance_id])['Reservations'][0]['Instances'][0]
-    key = paramiko.RSAKey.from_private_key_file("**mask for upload github**")
+    key = paramiko.RSAKey.from_private_key_file("******mask for upload git******")
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        ssh.connect(hostname=instance["PublicIpAddress"], username='ec2-user', pkey=key)
-        stdin, stdout, sterr = ssh.exec_command('condor_status')
+        ssh.connect(hostname=instance["PublicIpAddress"], username='***mask***', pkey=key)
+        stdin, stdout, stderr = ssh.exec_command('condor_status')
         print(stdout.read().decode())
     except Exception as e:
         print(f"{e}")
@@ -95,8 +97,46 @@ def condor_status_check(ec2, instance_id):
         ssh.close
 
 
-def do_some_job():
-    return None
+def do_some_job(ec2, instance_id):
+    chk = False
+    for instance in list_instances(ec2):
+        if instance[0] == instance_id:
+            chk = True
+    if not chk:
+        print(f"Instance {instance_id} is not exist")
+        return None
+    ec2c = boto3.client('ec2')
+    instance = ec2c.describe_instances(InstanceIds=[instance_id])['Reservations'][0]['Instances'][0]
+    key = paramiko.RSAKey.from_private_key_file("******mask for upload git******")
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(hostname=instance["PublicIpAddress"], username='***mask***', pkey=key)
+    total = 0
+    nump = int(input("Input Process Number : "))
+    with scp.SCPClient(ssh.get_transport()) as scpp:
+        scpp.put("./count.sh", "/home/***mask***/count.sh")
+    try:
+        for i in range(nump):
+            num_start = i * 10
+            num_end = num_start + 9
+            cmd = f'condor_submit -a "executable=/home/***mask***/count.sh" -a "universe=vanilla" -a "arguments={num_start} {num_end}" -a "output=/home/***mask***/out.{i}.txt" -a "error=/home/***mask***/err.{i}.txt" -a "log=/home/***mask***/log.{i}.log" -a "queue 1"'
+            ssh.exec_command(cmd)
+            print(f"Job{i} submitted")
+        print(f"Sleep 5 Seconds...")
+        time.sleep(5)
+        for i in range(nump):
+            cmd = f'cat /home/***mask***/out.{i}.txt'
+            stdin, stdout, stderr = ssh.exec_command(cmd)
+            for line in stdout.read().decode().splitlines():
+                print(line)
+                if "Total Sum =" in line:
+                    total += int(line.split('=')[1].strip())
+        print(f"Big Total Sum = {total}")
+
+    except Exception as e:
+        print(f"{e}")
+    finally:
+        ssh.close
 
 
 def main():
@@ -113,7 +153,7 @@ def main():
         print("7. Reboot Instance")
         print("8. List Images")
         print("9. Condor Status Check")
-        print("10. Do Some Job")
+        print("10. Do Custom Job")
         print("99. Quit")
         input_str = input("Enter an integer: ")
 
@@ -164,7 +204,11 @@ def main():
                 print(f"Instance ID : {instance[0]}, Instance Type : {instance[1]}, Instance State : {instance[2]}")
             condor_status_check(ec2, str(input("Input Instance ID : ")))       
         elif input_str == '10':
-            pass
+            print(f"Do Custom Job \n ============")
+            print(f"List All Instances")
+            for instance in list_instances(ec2):
+                print(f"Instance ID : {instance[0]}, Instance Type : {instance[1]}, Instance State : {instance[2]}")
+            do_some_job(ec2, str(input("Input Instance ID : ")))       
         elif input_str == '99':
             print(f"@program shutdown@ - Hyunsa")
             break
