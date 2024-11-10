@@ -52,7 +52,7 @@ def create_instance(ec2, image_id):
         if image['ImageId'] == image_id:
             chk = True
     if chk:
-        Instance = ec2.create_instances(ImageId=image_id, InstanceType='t2.micro', MinCount=1, MaxCount=1)
+        Instance = ec2.create_instances(ImageId=image_id, InstanceType='t2.micro', MinCount=1, MaxCount=1, KeyName='cloud-test', SecurityGroupIds=['HTCondor'])
         print(f"Instance {Instance[0].id} created")
     else:
         print("Error : No valid image ID")
